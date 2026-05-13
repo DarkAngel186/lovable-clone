@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: lovable-clone
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lovable-clone-db
+    username: postgres
+    password: Lokesh@123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format-sql: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
