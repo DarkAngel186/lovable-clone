@@ -21,3 +21,6 @@ server:
   port: 8080
   servlet:
     context-path: /api/v1
+
+jwt:
+  secret-key: a320diekfor4rkforkr49e3j2jsdmoe2jowmswdfefjme2wwjw

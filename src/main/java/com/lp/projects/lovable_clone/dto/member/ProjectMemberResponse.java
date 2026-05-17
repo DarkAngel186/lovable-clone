@@ -6,7 +6,7 @@ import java.time.Instant;
 
 public record ProjectMemberResponse(
         Long id,
-        String email,
+        String username,
         String name,
         ProjectRole projectRole,
         Instant updatedAt

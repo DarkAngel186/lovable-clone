@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface ProjectMemberService {
 
-    List<ProjectMemberResponse> getProjectMembers(Long projectId, Long userId);
+    List<ProjectMemberResponse> getProjectMembers(Long projectId);
 
-    ProjectMemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId);
+    ProjectMemberResponse inviteMember(Long projectId, InviteMemberRequest request);
 
-    ProjectMemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRequest request, Long userId);
+    ProjectMemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRequest request);
 
-    void deleteProjectMember(Long projectId, Long memberId, Long userId);
+    void deleteProjectMember(Long projectId, Long memberId);
 }

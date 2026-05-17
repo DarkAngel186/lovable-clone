@@ -21,7 +21,7 @@ public class AuthController {
     UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserProfleResponse> signUp(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> signUp(@RequestBody SignupRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED).
                  body(authService.signup(request));

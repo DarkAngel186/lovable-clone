@@ -11,11 +11,13 @@ import com.lp.projects.lovable_clone.mapper.ProjectMemberMapper;
 import com.lp.projects.lovable_clone.repository.ProjectMemberRepository;
 import com.lp.projects.lovable_clone.repository.ProjectRepository;
 import com.lp.projects.lovable_clone.repository.UserRepository;
+import com.lp.projects.lovable_clone.security.AuthUtil;
 import com.lp.projects.lovable_clone.service.ProjectMemberService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -29,40 +31,31 @@ import java.util.List;
 public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     ProjectMemberRepository projectMemberRepository;
-
     ProjectRepository projectRepository;
-
     UserRepository userRepository;
-
     ProjectMemberMapper projectMemberMapper;
+    AuthUtil authUtil;
 
     @Override
-    public List<ProjectMemberResponse> getProjectMembers(Long projectId, Long userId) {
+    @PreAuthorize("@security.canViewMembers(#projectId)")
+    public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
 
-        List<ProjectMemberResponse> memberResponses = new ArrayList<>();
-
-        Project project = getAccessibleProjectById(projectId, userId);
-        memberResponses.add(projectMemberMapper.userToProjectMemberResponse(project.getOwner()));
-
-         memberResponses.addAll(projectMemberRepository
+         return projectMemberRepository
                  .findByIdProjectId(projectId)
                  .stream()
                  .map(projectMemberMapper::projectMemberToProjectMemberResponse)
-                 .toList());
-
-        return memberResponses;
+                 .toList();
     }
 
     @Override
-    public ProjectMemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId) {
+    @PreAuthorize("@security.canManageMembers(#projectId)")
+    public ProjectMemberResponse inviteMember(Long projectId, InviteMemberRequest request) {
 
+        Long userId = getUserId();
         Project project = getAccessibleProjectById(projectId, userId);
 
-        if(!project.getOwner().getId().equals(userId))
-            throw new RuntimeException("You are not allowed to add member in this project!!");
-
         User invitee = userRepository
-                .findByEmail(request.email())
+                .findByUsername(request.username())
                 .orElseThrow();
 
         if(invitee.getId().equals(userId))
@@ -88,12 +81,10 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
-    public ProjectMemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRequest request, Long userId) {
+    @PreAuthorize("@security.canManageMembers(#projectId)")
+    public ProjectMemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRequest request) {
 
-        Project project = getAccessibleProjectById(projectId, userId);
-
-        if(!project.getOwner().getId().equals(userId))
-            throw new RuntimeException("Not allowed!!");
+        Project project = getAccessibleProjectById(projectId, getUserId());
 
         ProjectMemberId id = new ProjectMemberId(projectId, memberId);
 
@@ -108,12 +99,10 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
-    public void deleteProjectMember(Long projectId, Long memberId, Long userId) {
+    @PreAuthorize("@security.canManageMembers(#projectId)")
+    public void deleteProjectMember(Long projectId, Long memberId) {
 
-        Project project = getAccessibleProjectById(projectId, userId);
-
-        if(!project.getOwner().getId().equals(userId))
-            throw new RuntimeException("You are not allowed to add member in this project!!");
+        Project project = getAccessibleProjectById(projectId, getUserId());
 
         ProjectMemberId id = new ProjectMemberId(projectId, memberId);
 
@@ -128,5 +117,9 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         return projectRepository
                 .findAccessibleProjectById(id, userId)
                 .orElseThrow();
+    }
+
+    private Long getUserId() {
+        return authUtil.getCurrentUserId();
     }
 }
